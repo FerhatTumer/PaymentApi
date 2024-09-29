@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using Core.Events;
 using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Data
 {
@@ -34,10 +35,12 @@ namespace Infrastructure.Data
                 entity.Property(td => td.Amount).IsRequired();
                 // Foreign Key: TransactionId ile Transaction tablosuna referans
                 entity.HasOne(td => td.Transaction)
-                      .WithMany(t => t.TransactionDetail)
+                      .WithMany(t => t.TransactionDetails)
                       .HasForeignKey(td => td.TransactionId)
                       .OnDelete(DeleteBehavior.Cascade); // Transaction silindiğinde, TransactionDetail de silinir
             });
+
+            modelBuilder.Ignore<DomainEvent>();
         }
     }
 }
