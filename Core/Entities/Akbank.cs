@@ -12,7 +12,6 @@
             if (transaction.TransactionDate.Date == DateTime.UtcNow.Date)
             {
                 transaction.MarkAsCancelled();
-                transaction.UpdateNetAmount(-transaction.TotalAmount);
             }
             else
             {
@@ -24,8 +23,7 @@
         {
             if (transaction.TransactionDate.Date < DateTime.UtcNow.Date)
             {
-                transaction.MarkAsRefunded();
-                transaction.RefundAmount(amount);
+                transaction.MarkAsRefunded(amount);
             }
             else
             {

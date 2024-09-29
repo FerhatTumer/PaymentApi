@@ -1,12 +1,15 @@
+using Application.Common;
 using Application.Handlers;
 using Application.Mappings;
 using Application.Services;
 using Application.Validators;
+using Core.Events;
 using Core.Interfaces;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure;
 using Infrastructure.Data;
+using Infrastructure.EventHandlers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
@@ -32,13 +35,17 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 
 
+//Event Handlers
+builder.Services.AddScoped<DomainEventDispatcher>();
+builder.Services.AddScoped<IEventHandler<TransactionCancelledEvent>, TransactionCancelledEventHandler>();
+builder.Services.AddScoped<IEventHandler<TransactionSucceededEvent>, TransactionSucceededEventHandler>();
+builder.Services.AddScoped<IEventHandler<TransactionRefundedEvent>, TransactionRefundedEventHandler>();
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IBankService, BankService>();
-var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-var assembly = Directory.GetFiles(path, "Application.dll", SearchOption.TopDirectoryOnly)
-   .Select(AssemblyLoadContext.Default.LoadFromAssemblyPath)
-   .FirstOrDefault();
-builder.Services.AddMediatR(x => x.RegisterServicesFromAssemblies(assembly));
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(CancelTransactionCommandHandler).Assembly));
+
 var app = builder.Build();
 app.UseMiddleware<ExceptionMiddleware>();
 

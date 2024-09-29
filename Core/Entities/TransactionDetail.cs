@@ -1,4 +1,7 @@
-﻿namespace Core.Entities
+﻿
+using Core.Enums;
+
+namespace Core.Entities
 {
     public class TransactionDetail
     {
@@ -8,24 +11,35 @@
         public decimal Amount { get; }
         public string Status { get; private set; }
         public Transaction Transaction { get; set; }
-        public TransactionDetail(){}
+        // Private constructor for immutability
+        private TransactionDetail() { }
+        // Public constructor for creating a detail
         public TransactionDetail(Guid transactionId, string transactionType, decimal amount)
         {
             Id = Guid.NewGuid();
             TransactionId = transactionId;
             TransactionType = transactionType;
             Amount = amount;
-            Status = "Pending";
+            Status = TransactionStatus.Pending.ToString();
         }
+        // Mark this transaction detail as successful
         public void MarkAsSuccess()
         {
-            if (Status != "Pending")
-                throw new InvalidOperationException("Transaction detail is already processed.");
-            Status = "Success";
+            EnsureIsPending();
+            Status = TransactionStatus.Success.ToString();
         }
+        // Mark this transaction detail as failed
         public void MarkAsFailed()
         {
-            Status = "Failed";
+            Status = TransactionStatus.Failed.ToString();
+        }
+        // Helper method to enforce the pending status rule
+        private void EnsureIsPending()
+        {
+            if (Status != TransactionStatus.Pending.ToString())
+            {
+                throw new InvalidOperationException("Transaction detail is already processed.");
+            }
         }
     }
 }

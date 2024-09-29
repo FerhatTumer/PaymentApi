@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Core.Enums
+﻿namespace Core.Enums
 {
     public enum TransactionType
     {
-        Sale,
-        Refund,
-        Cancel,
-        Pending
+        Pending = 1,   // Initial pending state
+        Sale = 2,      // Transaction involves a sale/purchase
+        Cancel = 3,    // Transaction cancellation
+        Refund = 4     // Transaction refund
     }
 }

@@ -1,44 +1,64 @@
 ﻿using Core.Entities;
-using Core.Interfaces;
+using Core.Events;
 using System;
-
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Application.Common;
+using Core.Interfaces;
 namespace Application.Services
 {
     public class BankService : IBankService
     {
         private readonly Dictionary<string, BaseBank> _banks;
-        public BankService()
+        private readonly DomainEventDispatcher _eventDispatcher;
+        public BankService(DomainEventDispatcher eventDispatcher)
         {
             _banks = new Dictionary<string, BaseBank>
            {
-               { new string("bank1-id"), new Akbank() },
-               { new string("bank2-id"), new Garanti() },
-               { new string("bank3-id"), new YapiKredi() }
+               { "bank1-id", new Akbank() },
+               { "bank2-id", new Garanti() },
+               { "bank3-id", new YapiKredi() }
            };
+            _eventDispatcher = eventDispatcher;
         }
-        public Task Pay(Transaction transaction)
+        public async Task Pay(Transaction transaction)
         {
             if (_banks.ContainsKey(transaction.BankId))
             {
-                return _banks[transaction.BankId].Pay(transaction);
+                await _banks[transaction.BankId].Pay(transaction);
+                await _eventDispatcher.Dispatch(transaction.DomainEvents);
+                transaction.ClearDomainEvents();
             }
-            throw new InvalidOperationException("Bank not found.");
+            else
+            {
+                throw new InvalidOperationException("Bank not found.");
+            }
         }
-        public Task Cancel(Transaction transaction)
+        public async Task Cancel(Transaction transaction)
         {
             if (_banks.ContainsKey(transaction.BankId))
             {
-                return _banks[transaction.BankId].Cancel(transaction);
+                await _banks[transaction.BankId].Cancel(transaction);
+                await _eventDispatcher.Dispatch(transaction.DomainEvents);
+                transaction.ClearDomainEvents();
             }
-            throw new InvalidOperationException("Bank not found.");
+            else
+            {
+                throw new InvalidOperationException("Bank not found.");
+            }
         }
-        public Task Refund(Transaction transaction, decimal amount)
+        public async Task Refund(Transaction transaction, decimal amount)
         {
             if (_banks.ContainsKey(transaction.BankId))
             {
-                return _banks[transaction.BankId].Refund(transaction, amount);
+                await _banks[transaction.BankId].Refund(transaction, amount);
+                await _eventDispatcher.Dispatch(transaction.DomainEvents);
+                transaction.ClearDomainEvents();
             }
-            throw new InvalidOperationException("Bank not found.");
+            else
+            {
+                throw new InvalidOperationException("Bank not found.");
+            }
         }
     }
 }
