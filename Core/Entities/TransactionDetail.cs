@@ -1,5 +1,6 @@
 ﻿
 using Core.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Core.Entities
 {
@@ -10,7 +11,8 @@ namespace Core.Entities
         public string TransactionType { get; }
         public decimal Amount { get; }
         public string Status { get; private set; }
-        public Transaction Transaction { get; set; }
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
         // Private constructor for immutability
         private TransactionDetail() { }
         // Public constructor for creating a detail

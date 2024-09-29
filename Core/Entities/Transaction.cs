@@ -1,5 +1,6 @@
 ﻿using Core.Enums;
 using Core.Events;
+using System.ComponentModel.DataAnnotations;
 
 namespace Core.Entities
 {
@@ -16,6 +17,8 @@ namespace Core.Entities
         public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents.AsReadOnly();
         private readonly List<TransactionDetail> _transactionDetails = new();
         public IReadOnlyCollection<TransactionDetail> TransactionDetails => _transactionDetails.AsReadOnly();
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
         // Private constructor to enforce immutability on creation
         private Transaction() { }
         // Constructor that defines an initial transaction state
@@ -29,7 +32,7 @@ namespace Core.Entities
             OrderReference = orderReference;
             TransactionDate = DateTime.UtcNow;
             // Automatically add initial transaction detail
-            AddTransactionDetail(new TransactionDetail(Id, TransactionType.Pending.ToString(), totalAmount));
+            //AddTransactionDetail(new TransactionDetail(Id, TransactionType.Pending.ToString(), totalAmount));
         }
         // Mark transaction as successful and update its details
         public void MarkAsCancelled()
@@ -37,17 +40,17 @@ namespace Core.Entities
             EnsureTransactionIsSuccess();
             Status = TransactionStatus.Cancelled.ToString();
             CancelAmount();
-            AddTransactionDetail(new TransactionDetail(Id, TransactionType.Cancel.ToString(), TotalAmount));
+            //AddTransactionDetail(new TransactionDetail(Id, TransactionType.Cancel.ToString(), TotalAmount));
             // Raise the domain event
-            _domainEvents.Add(new TransactionCancelledEvent(Id));
+            _domainEvents.Add(new TransactionCancelledEvent(Id, TotalAmount));
         }
         public void MarkAsSuccess()
         {
             EnsureTransactionIsPending();
             Status = TransactionStatus.Success.ToString();
-            AddTransactionDetail(new TransactionDetail(Id, TransactionType.Sale.ToString(), TotalAmount));
+            //AddTransactionDetail(new TransactionDetail(Id, TransactionType.Sale.ToString(), TotalAmount));
             // Raise the domain event
-            _domainEvents.Add(new TransactionSucceededEvent(Id));
+            _domainEvents.Add(new TransactionSucceededEvent(Id, TotalAmount));
         }
         public void MarkAsRefunded(decimal amount)
         {
@@ -55,7 +58,7 @@ namespace Core.Entities
             EnsureRefundAmountIsValid(amount);
             Status = TransactionStatus.Refunded.ToString();
             RefundAmount(amount);
-            AddTransactionDetail(new TransactionDetail(Id, TransactionType.Refund.ToString(), amount));
+            //AddTransactionDetail(new TransactionDetail(Id, TransactionType.Refund.ToString(), amount));
             // Raise the domain event
             _domainEvents.Add(new TransactionRefundedEvent(Id, amount));
         }

@@ -3,17 +3,22 @@
     public class TransactionCancelledEvent : DomainEvent
     {
         public Guid TransactionId { get; }
-        public TransactionCancelledEvent(Guid transactionId)
+        public decimal Amount { get; set; }
+        public TransactionCancelledEvent(Guid transactionId, decimal amount)
         {
             TransactionId = transactionId;
+            Amount = amount;
         }
     }
     public class TransactionSucceededEvent : DomainEvent
     {
         public Guid TransactionId { get; }
-        public TransactionSucceededEvent(Guid transactionId)
+        public decimal Amount { get; set; }
+
+        public TransactionSucceededEvent(Guid transactionId, decimal amount)
         {
             TransactionId = transactionId;
+            Amount = amount;
         }
     }
     public class TransactionRefundedEvent : DomainEvent

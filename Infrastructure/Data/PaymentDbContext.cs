@@ -23,6 +23,13 @@ namespace Infrastructure.Data
                 entity.Property(t => t.Status).IsRequired().HasMaxLength(20);
                 entity.Property(t => t.OrderReference).IsRequired().HasMaxLength(50);
                 entity.Property(t => t.TransactionDate).IsRequired();
+                entity.Property(t => t.RowVersion)
+                                 .IsRowVersion() // Concurrency token for optimistic concurrency control
+                                 .IsRequired();  // Required field
+                entity.HasMany(t => t.TransactionDetails)
+                      .WithOne()  // No explicit navigation property in TransactionDetail
+                      .HasForeignKey(td => td.TransactionId) // Foreign key relationship
+                      .OnDelete(DeleteBehavior.Cascade); // Cascade delete if Transaction is deleted
             });
 
 
@@ -33,11 +40,13 @@ namespace Infrastructure.Data
                 entity.Property(td => td.TransactionType).IsRequired().HasMaxLength(20);
                 entity.Property(td => td.Status).IsRequired().HasMaxLength(20);
                 entity.Property(td => td.Amount).IsRequired();
-                // Foreign Key: TransactionId ile Transaction tablosuna referans
-                entity.HasOne(td => td.Transaction)
-                      .WithMany(t => t.TransactionDetails)
-                      .HasForeignKey(td => td.TransactionId)
-                      .OnDelete(DeleteBehavior.Cascade); // Transaction silindiğinde, TransactionDetail de silinir
+                entity.Property(td => td.RowVersion)
+                .IsRowVersion() // Concurrency token for optimistic concurrency control
+                .IsRequired();  // Required field
+                entity.HasOne<Transaction>()
+                      .WithMany(t => t.TransactionDetails) // Set up one-to-many relationship
+                      .HasForeignKey(td => td.TransactionId) // Foreign key relationship
+                      .OnDelete(DeleteBehavior.Cascade); // Cascade delete if Transaction is deleted
             });
 
             modelBuilder.Ignore<DomainEvent>();

@@ -11,8 +11,10 @@ namespace Infrastructure
         {
             _context = context;
             TransactionRepository = new TransactionRepository(_context);
+            TransactionDetailRepository = new TransactionDetailRepository(_context);
         }
         public ITransactionRepository TransactionRepository { get; }
+        public ITransactionDetailRepository TransactionDetailRepository {  get; }
         public async Task<int> CommitAsync()
         {
             return await _context.SaveChangesAsync();

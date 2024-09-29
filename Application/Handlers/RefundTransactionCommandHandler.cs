@@ -2,6 +2,7 @@
 using Core.Entities;
 using Core.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 namespace Application.Handlers
@@ -17,11 +18,12 @@ namespace Application.Handlers
         }
         public async Task<Transaction> Handle(RefundTransactionCommand request, CancellationToken cancellationToken)
         {
-            var transaction = await _unitOfWork.TransactionRepository.GetByIdAsync(request.TransactionId);
+            var transaction = await _unitOfWork.TransactionRepository.GetByIdWithDetailAsync(request.TransactionId);
             if (transaction == null)
                 throw new Exception("Transaction not found.");
             await _bankService.Refund(transaction, request.Amount);
             await _unitOfWork.CommitAsync();
+
             return transaction;
         }
     }
