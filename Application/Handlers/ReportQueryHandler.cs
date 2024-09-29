@@ -2,6 +2,7 @@
 using Core.Entities;
 using Core.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,24 +19,26 @@ namespace Application.Handlers
         }
         public async Task<IEnumerable<Transaction>> Handle(ReportQuery request, CancellationToken cancellationToken)
         {
-            var transactions = await _unitOfWork.TransactionRepository.GetAllAsync();
+            var query = _unitOfWork.TransactionRepository.AsQueryable();
+
             if (!string.IsNullOrEmpty(request.BankId))
             {
-                transactions = transactions.Where(t => t.BankId == request.BankId);
+                query = query.Where(t => t.BankId == request.BankId);
             }
             if (!string.IsNullOrEmpty(request.Status))
             {
-                transactions = transactions.Where(t => t.Status.Equals(request.Status, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(t => t.Status.Equals(request.Status, StringComparison.OrdinalIgnoreCase));
             }
             if (!string.IsNullOrEmpty(request.OrderReference))
             {
-                transactions = transactions.Where(t => t.OrderReference.Equals(request.OrderReference, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(t => t.OrderReference.Equals(request.OrderReference, StringComparison.OrdinalIgnoreCase));
             }
             if (request.StartDate.HasValue && request.EndDate.HasValue)
             {
-                transactions = transactions.Where(t => t.TransactionDate >= request.StartDate.Value && t.TransactionDate <= request.EndDate.Value);
+                query = query.Where(t => t.TransactionDate >= request.StartDate.Value && t.TransactionDate <= request.EndDate.Value);
             }
-            return transactions;
+
+            return await query.ToListAsync(cancellationToken);
         }
     }
 }

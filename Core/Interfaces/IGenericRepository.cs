@@ -12,5 +12,6 @@ namespace Core.Interfaces
         Task AddAsync(T entity);
         void Remove(T entity);
         void Update(T entity);
+        IQueryable<T> AsQueryable();
     }
 }
